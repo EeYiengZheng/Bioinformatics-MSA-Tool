@@ -7,9 +7,49 @@ ee yieng zheng, raymond hong
 from enum import Enum
 
 
-class Type(Enum):
+class AlignmentType(Enum):
     NUCLEOTIDE = 1
     PROTEIN = 2
+
+class SubstitutionMatrix(Enum):
+    BLOSUM62 = [
+        [' ','a','r','n','d','c','q','e','g','h','i','l','k','m','f','p','s','t','w','y','v','b','z','x','-'],
+        ['a','4','-1','-2','-2','0','-1','-1','0','-2','-1','-1','-1','-1','-2','-1','1','0','-3','-2','0','-2','-1','0','-4'],
+        ['r','-1','5','0','-2','-3','1','0','-2','0','-3','-2','2','-1','-3','-2','-1','-1','-3','-2','-3','-1','0','-1','-4'],
+        ['n','-2','0','6','1','-3','0','0','0','1','-3','-3','0','-2','-3','-2','1','0','-4','-2','-3','3','0','-1','-4'],
+        ['d','-2','-2','1','6','-3','0','2','-1','-1','-3','-4','-1','-3','-3','-1','0','-1','-4','-3','-3','4','1','-1','-4'],
+        ['c','0','-3','-3','-3','9','-3','-4','-3','-3','-1','-1','-3','-1','-2','-3','-1','-1','-2','-2','-1','-3','-3','-2','-4'],
+        ['q','-1','1','0','0','-3','5','2','-2','0','-3','-2','1','0','-3','-1','0','-1','-2','-1','-2','0','3','-1','-4'],
+        ['e','-1','0','0','2','-4','2','5','-2','0','-3','-3','1','-2','-3','-1','0','-1','-3','-2','-2','1','4','-1','-4'],
+        ['g','0','-2','0','-1','-3','-2','-2','6','-2','-4','-4','-2','-3','-3','-2','0','-2','-2','-3','-3','-1','-2','-1','-4'],
+        ['h','-2','0','1','-1','-3','0','0','-2','8','-3','-3','-1','-2','-1','-2','-1','-2','-2','2','-3','0','0','-1','-4'],
+        ['i','-1','-3','-3','-3','-1','-3','-3','-4','-3','4','2','-3','1','0','-3','-2','-1','-3','-1','3','-3','-3','-1','-4'],
+        ['l','-1','-2','-3','-4','-1','-2','-3','-4','-3','2','4','-2','2','0','-3','-2','-1','-2','-1','1','-4','-3','-1','-4'],
+        ['k','-1','2','0','-1','-3','1','1','-2','-1','-3','-2','5','-1','-3','-1','0','-1','-3','-2','-2','0','1','-1','-4'],
+        ['m','-1','-1','-2','-3','-1','0','-2','-3','-2','1','2','-1','5','0','-2','-1','-1','-1','-1','1','-3','-1','-1','-4'],
+        ['f','-2','-3','-3','-3','-2','-3','-3','-3','-1','0','0','-3','0','6','-4','-2','-2','1','3','-1','-3','-3','-1','-4'],
+        ['p','-1','-2','-2','-1','-3','-1','-1','-2','-2','-3','-3','-1','-2','-4','7','-1','-1','-4','-3','-2','-2','-1','-2','-4'],
+        ['s','1','-1','1','0','-1','0','0','0','-1','-2','-2','0','-1','-2','-1','4','1','-3','-2','-2','0','0','0','-4'],
+        ['t','0','-1','0','-1','-1','-1','-1','-2','-2','-1','-1','-1','-1','-2','-1','1','5','-2','-2','0','-1','-1','0','-4'],
+        ['w','-3','-3','-4','-4','-2','-2','-3','-2','-2','-3','-2','-3','-1','1','-4','-3','-2','11','2','-3','-4','-3','-2','-4'],
+        ['y','-2','-2','-2','-3','-2','-1','-2','-3','2','-1','-1','-2','-1','3','-3','-2','-2','2','7','-1','-3','-2','-1','-4'],
+        ['v','0','-3','-3','-3','-1','-2','-2','-3','-3','3','1','-2','1','-1','-2','-2','0','-3','-1','4','-3','-2','-1','-4'],
+        ['b','-2','-1','3','4','-3','0','1','-1','0','-3','-4','0','-3','-3','-2','0','-1','-4','-3','-3','4','1','-1','-4'],
+        ['z','-1','0','0','1','-3','3','4','-2','0','-3','-3','1','-1','-3','-1','0','-1','-3','-2','-2','1','4','-1','-4'],
+        ['x','0','-1','-1','-1','-2','-1','-1','-1','-1','-1','-1','-1','-1','-1','-2','0','0','-2','-1','-1','-1','-1','-1','-4'],
+        ['-','-4','-4','-4','-4','-4','-4','-4','-4','-4','-4','-4','-4','-4','-4','-4','-4','-4','-4','-4','-4','-4','-4','-4','1']
+    ]
+    # other sub-matrices here
+
+    def __init__(self, matrix_list: list):
+        self.__matrix_dict = dict()
+        for i in range(1, len(matrix_list)):
+            for j in range(1, len(matrix_list[0])):
+                self.__matrix_dict[(matrix_list[i][0], matrix_list[0][j])] = matrix_list[i][j]
+
+    @property
+    def get_dictionary(self):
+        return self.__matrix_dict
 
 
 class PWA(object):
@@ -20,7 +60,7 @@ class PWA(object):
     supports nucleotide or peptide comparison
     """
 
-    def __init__(self, alignment_type: Type, fasta: str):
+    def __init__(self, alignment_type: AlignmentType, fasta: str):
         """
         Assuming all inputs are valid FASTA-string
         and using linux \n EOL
@@ -38,22 +78,23 @@ class PWA(object):
         if len(self.fasta_list) < 2:
             raise ValueError("Need at least 2 FASTA sequences")
 
-    def do_alignment(self, match=1, mismatch=-1, gap=-2):
+    def do_alignment(self, match=1, mismatch=-1, gap=-2, sub_matrix=None):
         """
         performs pairwise alignment of two sequences and the traced path string at self.traced_path
         :param match: positive score for matching bit
         :param mismatch: negative score for mismatching bit
         :param gap: negative score for gap-penalty
+        :param sub_matrix: substitution matrix to use. Default is BLOSUM62
         :return: void
         """
-        if self.alignment_type == Type.NUCLEOTIDE:
-            self.traced_path = self.__align_nuc(match, mismatch, gap)
+        if self.alignment_type == AlignmentType.NUCLEOTIDE:
+            self.traced_path = self.__align_nuc(match, mismatch, gap, sub_matrix)
             self.aligned_sequences = self.__insert_indel()
 
-        elif self.alignment_type == Type.PROTEIN:
-            self.traced_path = self.__align_pro(match, mismatch, gap)
+        elif self.alignment_type == AlignmentType.PROTEIN:
+            self.traced_path = self.__align_pro(match, mismatch, gap, sub_matrix)
         else:
-            raise AttributeError("non-supported alignment Type. Supports: ", [t for t in Type])
+            raise AttributeError("non-supported alignment Type. Supports: ", [t for t in AlignmentType])
 
     def get_best_score(self):
         end = self.__matrix[-1][-1]
@@ -70,7 +111,7 @@ class PWA(object):
             if isinstance(row[0], str):
                 print(separator.join(str(c) for c in row))
 
-    def __align_nuc(self, match, mismatch, gap):
+    def __align_nuc(self, match, mismatch, gap, sub_matrix):
         # copy the first 2 sequences to the matrix table
         seq1 = self.__strip_fasta_comment(self.fasta_list[0])
         seq2 = [list(c) for c in list(self.__strip_fasta_comment(self.fasta_list[1]))]
@@ -112,30 +153,34 @@ class PWA(object):
 
                 self.__matrix[row+2].append((m, arrow))
         # trace back
-        row = len(self.__matrix) - 1
-        col = len(self.__matrix[0]) - 1
-        path = self.__trace_back(row, col)
+        path = self.__trace_back()
         return path
 
-    def __align_pro(self, match, mismatch, gap):
+    def __align_pro(self, match, mismatch, gap, matrix):
 
         return ''
 
-    def __trace_back(self, row, col):
-        if row == 1 and col == 1:
-            return ''
-        score, path = self.__matrix[row][col]
-        p = path[0]
-        if p is 'd':
-            t = self.__trace_back(row-1, col-1)
-        elif p is 'n':
-            t = self.__trace_back(row-1, col)
-        elif p is 'w':
-            t = self.__trace_back(row, col-1)
-        else:
-            raise RuntimeError("No path found. CHECK YOUR PWA ALGORITHM!!")
+    def __trace_back(self):
+        row = len(self.__matrix) - 1
+        col = len(self.__matrix[0]) - 1
 
-        return t + p
+        ret = ""
+
+        while row > 1 or col > 1:
+            score, path = self.__matrix[row][col]
+            p = path[0]
+            if p is 'd':
+                row -= 1
+                col -= 1
+            elif p is 'n':
+                row -= 1
+            elif p is 'w':
+                col -= 1
+            else:
+                raise RuntimeError("No path found. CHECK YOUR PWA ALGORITHM!!")
+            ret = p + ret
+
+        return ret
 
     def __insert_indel(self):
         """
@@ -201,9 +246,9 @@ class PWA(object):
 
 
 if __name__ == '__main__':
-    sequences = input("FASTA:\n")
-    pwa = PWA(Type.NUCLEOTIDE, sequences)
-    pwa.do_alignment()
+    # sequences = input("FASTA:\n")
+    # pwa = PWA(AlignmentType.NUCLEOTIDE, sequences)
+    # pwa.do_alignment()
 
     # pwa.print_pretty()
     # pwa.print_aligned_seq()
@@ -225,3 +270,8 @@ if __name__ == '__main__':
             score += -1
     print(score)
     """
+
+    # test substitution matrix Enum
+    # d = SubstitutionMatrix.BLOSUM62.get_dictionary
+    # print(d['-','a'])
+    # print(d['w', 'w'])
