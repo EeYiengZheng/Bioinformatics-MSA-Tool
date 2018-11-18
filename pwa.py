@@ -6,8 +6,8 @@ ee yieng zheng, raymond hong
 
 from enum import Enum
 from math import inf
-from warnings import catch_warnings
-
+from re import compile
+from warnings import warn
 
 class AlignmentMethod(Enum):
     GLOBAL = 1
@@ -21,27 +21,27 @@ class AlignmentType(Enum):
 
 class SubstitutionMatrix(Enum):
     BLOSUM62 = [
-        ['','a','r','n','d','c','q','e','g','h','i','l','k','m','f','p','s','t','w','y','v'],
-        ['a',4,-1,-2,-2,0,-1,-1,0,-2,-1,-1,-1,-1,-2,-1,1,0,-3,-2,0],
-        ['r',-1,5,0,-2,-3,1,0,-2,0,-3,-2,2,-1,-3,-2,-1,-1,-3,-2,-3],
-        ['n',-2,0,6,1,-3,0,0,0,1,-3,-3,0,-2,-3,-2,1,0,-4,-2,-3],
-        ['d',-2,-2,1,6,-3,0,2,-1,-1,-3,-4,-1,-3,-3,-1,0,-1,-4,-3,-3],
-        ['c',0,-3,-3,-3,9,-3,-4,-3,-3,-1,-1,-3,-1,-2,-3,-1,-1,-2,-2,-1],
-        ['q',-1,1,0,0,-3,5,2,-2,0,-3,-2,1,0,-3,-1,0,-1,-2,-1,-2],
-        ['e',-1,0,0,2,-4,2,5,-2,0,-3,-3,1,-2,-3,-1,0,-1,-3,-2,-2],
-        ['g',0,-2,0,-1,-3,-2,-2,6,-2,-4,-4,-2,-3,-3,-2,0,-2,-2,-3,-3],
-        ['h',-2,0,1,-1,-3,0,0,-2,8,-3,-3,-1,-2,-1,-2,-1,-2,-2,2,-3],
-        ['i',-1,-3,-3,-3,-1,-3,-3,-4,-3,4,2,-3,1,0,-3,-2,-1,-3,-1,3],
-        ['l',-1,-2,-3,-4,-1,-2,-3,-4,-3,2,4,-2,2,0,-3,-2,-1,-2,-1,1],
-        ['k',-1,2,0,-1,-3,1,1,-2,-1,-3,-2,5,-1,-3,-1,0,-1,-3,-2,-2],
-        ['m',-1,-1,-2,-3,-1,0,-2,-3,-2,1,2,-1,5,0,-2,-1,-1,-1,-1,1],
-        ['f',-2,-3,-3,-3,-2,-3,-3,-3,-1,0,0,-3,0,6,-4,-2,-2,1,3,-1],
-        ['p',-1,-2,-2,-1,-3,-1,-1,-2,-2,-3,-3,-1,-2,-4,7,-1,-1,-4,-3,-2],
-        ['s',1,-1,1,0,-1,0,0,0,-1,-2,-2,0,-1,-2,-1,4,1,-3,-2,-2],
-        ['t',0,-1,0,-1,-1,-1,-1,-2,-2,-1,-1,-1,-1,-2,-1,1,5,-2,-2,0],
-        ['w',-3,-3,-4,-4,-2,-2,-3,-2,-2,-3,-2,-3,-1,1,-4,-3,-2,11,2,-3],
-        ['y',-2,-2,-2,-3,-2,-1,-2,-3,2,-1,-1,-2,-1,3,-3,-2,-2,2,7,-1],
-        ['v',0,-3,-3,-3,-1,-2,-2,-3,-3,3,1,-2,1,-1,-2,-2,0,-3,-1,4]
+        ['','A','R','N','D','C','Q','E','G','H','I','L','K','M','F','P','S','T','W','Y','V'],
+        ['A',4,-1,-2,-2,0,-1,-1,0,-2,-1,-1,-1,-1,-2,-1,1,0,-3,-2,0],
+        ['R',-1,5,0,-2,-3,1,0,-2,0,-3,-2,2,-1,-3,-2,-1,-1,-3,-2,-3],
+        ['N',-2,0,6,1,-3,0,0,0,1,-3,-3,0,-2,-3,-2,1,0,-4,-2,-3],
+        ['D',-2,-2,1,6,-3,0,2,-1,-1,-3,-4,-1,-3,-3,-1,0,-1,-4,-3,-3],
+        ['C',0,-3,-3,-3,9,-3,-4,-3,-3,-1,-1,-3,-1,-2,-3,-1,-1,-2,-2,-1],
+        ['Q',-1,1,0,0,-3,5,2,-2,0,-3,-2,1,0,-3,-1,0,-1,-2,-1,-2],
+        ['E',-1,0,0,2,-4,2,5,-2,0,-3,-3,1,-2,-3,-1,0,-1,-3,-2,-2],
+        ['G',0,-2,0,-1,-3,-2,-2,6,-2,-4,-4,-2,-3,-3,-2,0,-2,-2,-3,-3],
+        ['H',-2,0,1,-1,-3,0,0,-2,8,-3,-3,-1,-2,-1,-2,-1,-2,-2,2,-3],
+        ['I',-1,-3,-3,-3,-1,-3,-3,-4,-3,4,2,-3,1,0,-3,-2,-1,-3,-1,3],
+        ['L',-1,-2,-3,-4,-1,-2,-3,-4,-3,2,4,-2,2,0,-3,-2,-1,-2,-1,1],
+        ['K',-1,2,0,-1,-3,1,1,-2,-1,-3,-2,5,-1,-3,-1,0,-1,-3,-2,-2],
+        ['M',-1,-1,-2,-3,-1,0,-2,-3,-2,1,2,-1,5,0,-2,-1,-1,-1,-1,1],
+        ['F',-2,-3,-3,-3,-2,-3,-3,-3,-1,0,0,-3,0,6,-4,-2,-2,1,3,-1],
+        ['P',-1,-2,-2,-1,-3,-1,-1,-2,-2,-3,-3,-1,-2,-4,7,-1,-1,-4,-3,-2],
+        ['S',1,-1,1,0,-1,0,0,0,-1,-2,-2,0,-1,-2,-1,4,1,-3,-2,-2],
+        ['T',0,-1,0,-1,-1,-1,-1,-2,-2,-1,-1,-1,-1,-2,-1,1,5,-2,-2,0],
+        ['W',-3,-3,-4,-4,-2,-2,-3,-2,-2,-3,-2,-3,-1,1,-4,-3,-2,11,2,-3],
+        ['Y',-2,-2,-2,-3,-2,-1,-2,-3,2,-1,-1,-2,-1,3,-3,-2,-2,2,7,-1],
+        ['V',0,-3,-3,-3,-1,-2,-2,-3,-3,3,1,-2,1,-1,-2,-2,0,-3,-1,4]
     ]
     # other sub-matrices here
 
@@ -74,8 +74,8 @@ class PWA(object):
         """
         self.alignment_type = alignment_type
         self.alignment_method = alignment_method
-        self.fasta_string = fasta.replace(" ", "")
-        self.fasta_list = self.__to_list(fasta)
+        self.fasta_string = self.__conform_fasta_string(fasta)
+        self.fasta_list = self.__to_list()
         self.traced_path = None
         self.aligned_sequences = None
         self.__matrix = [[" ", " "],
@@ -118,6 +118,7 @@ class PWA(object):
         for row in self.__matrix:
             if isinstance(row[0], str):
                 print(separator.join(str(c) for c in row))
+        print()
 
     def __init_matrix(self, gap, seq1, seq2):
         if self.alignment_method.name is AlignmentMethod.LOCAL.name:
@@ -206,7 +207,6 @@ class PWA(object):
         while row > 1 or col > 1:
             score, path = self.__matrix[row][col]
             if score <= 0 and local:
-                print(ret)
                 return ret
 
             p = path[0]
@@ -302,14 +302,36 @@ class PWA(object):
 
         return [new_seq1, new_seq2]
 
-    def __to_list(self, seq: str):
-        fastas = list()
+    def __conform_fasta_string(self, raw_fasta: str):
+        nucl_pat = compile("^[ATUCG]+$")
+        prot_pat = compile("^[-ARNDCQEGHILKMFPSTWYV]+$")
+        not_these = compile("[^-UARNDCQEGHILKMFPSTWYV]+")
+
+        prot = False
+        if self.alignment_type.name is AlignmentType.PROTEIN.name:
+            prot = True
+
         buffer = ""
-        for line in seq.replace('\\n', '\n').splitlines():
+        lines = raw_fasta.replace("\\n", "\n").splitlines()
+        for line in lines:
+            line = line.strip()
             if line.startswith('>'):
-                buffer = line
-            else:
-                fastas.append(buffer + "\n" + line)
+                if buffer:
+                    buffer += "\n"
+                buffer += line + "\n"
+            elif line:
+                line = compile("[0-9\s]+").sub('', line).upper()
+                illegal = prot_pat.sub('', line) if prot else nucl_pat.sub('', line)
+                if illegal:
+                    raise UnsupportedCodeError("illegal codes: " + illegal)
+                else:
+                    buffer += line
+        return buffer
+
+    def __to_list(self):
+        fastas = self.fasta_string.split('>')
+        func = lambda f: '>' + f
+        fastas = list(map(func, filter(len, fastas)))
         return fastas
 
     def __get_fasta_comment(self, seq: str):
@@ -330,3 +352,11 @@ class PWA(object):
         :return: sequence with FASTA comment removed
         """
         return seq.lstrip(self.__get_fasta_comment(seq)).strip()
+
+
+class UnsupportedCodeError(Exception):
+    def __init__(self, option='', value="Sequence must contain only Amino acids: -ARNDCQEGHILKMFPSTWYV and Nucleotides: ATUCG. "):
+        self.value = value + option
+
+    def __str__(self):
+        return repr(self.value)
