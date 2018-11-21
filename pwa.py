@@ -104,14 +104,50 @@ class PWA(object):
         self.traced_path = self.__align(match, mismatch, gap, sub_matrix)
         self.aligned_sequences = self.__insert_indel()
 
-    def get_final_score(self):
-        end = self.__matrix[-1][-1]
-        return end[0]
+    def get_conserved_regions(self):
+        if len(self.aligned_sequences) > 2:
+            return self.aligned_sequences[2]
+        else:
+            s = self.aligned_sequences[0]
+            t = self.aligned_sequences[1]
+            v = ''.join(s[i] if s[i] == t[i] else ' ' for i in range(len(s)))
+
+            self.aligned_sequences.append(v)
+            return v
 
     def print_aligned_seq(self):
         if self.aligned_sequences:
             print(self.aligned_sequences[0], " ", self.__get_fasta_comment(self.fasta_list[0]))
             print(self.aligned_sequences[1], " ", self.__get_fasta_comment(self.fasta_list[1]))
+
+    def print_aligned_seq_formatted(self, max_len=80,show_conserved=True):
+        seq1 = [self.aligned_sequences[0][i:i + max_len] for i in range(0, len(self.aligned_sequences[0]), max_len)]
+        seq2 = [self.aligned_sequences[1][i:i + max_len] for i in range(0, len(self.aligned_sequences[1]), max_len)]
+
+        c_region = self.get_conserved_regions()
+        seqC = [c_region[i:i + max_len] for i in range(0, len(c_region), max_len)]
+
+        width = str(len(str(len(c_region))))
+        s_len_total = 0
+        t_len_total = 0
+
+        row = 0
+        for s, t, v in list(zip(seq1, seq2, seqC)):
+            s_len = max_len - s.count('-')
+            t_len = max_len - t.count('-')
+            print("query", format(s_len_total + 1, ' <' + width + 'd'), s, s_len + s_len_total)
+            print("sbjct", format(t_len_total + 1, ' <' + width + 'd'), t, t_len + t_len_total)
+            if show_conserved:
+                print("     ", format('', ' <' + width + 's'), v)
+            print()
+            row += 1
+            s_len_total += s_len
+            t_len_total += t_len
+
+
+    def get_final_score(self):
+        end = self.__matrix[-1][-1]
+        return end[0]
 
     def print_pretty(self, separator=' '):
         print("rows: ", len(self.__matrix), "\ncolumns: ", len(self.__matrix[0]), "\n")
@@ -305,7 +341,6 @@ class PWA(object):
     def __conform_fasta_string(self, raw_fasta: str):
         nucl_pat = compile("^[ATUCG]+$")
         prot_pat = compile("^[-ARNDCQEGHILKMFPSTWYV]+$")
-        not_these = compile("[^-UARNDCQEGHILKMFPSTWYV]+")
 
         prot = False
         if self.alignment_type.name is AlignmentType.PROTEIN.name:
