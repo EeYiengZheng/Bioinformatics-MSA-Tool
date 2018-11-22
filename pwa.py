@@ -120,11 +120,14 @@ class PWA(object):
             print(self.aligned_sequences[0], " ", self.__get_fasta_comment(self.fasta_list[0]))
             print(self.aligned_sequences[1], " ", self.__get_fasta_comment(self.fasta_list[1]))
 
-    def print_aligned_seq_formatted(self, max_len=80,show_conserved=True):
+    def print_aligned_seq_formatted(self, max_len=80,show_conserved=True,show_mismatch_only=False):
         seq1 = [self.aligned_sequences[0][i:i + max_len] for i in range(0, len(self.aligned_sequences[0]), max_len)]
         seq2 = [self.aligned_sequences[1][i:i + max_len] for i in range(0, len(self.aligned_sequences[1]), max_len)]
 
         c_region = self.get_conserved_regions()
+        if show_mismatch_only:
+            c_region = c_region.replace(' ', 'x')
+            c_region = (compile('[A-Z]').sub(' ', c_region))
         seqC = [c_region[i:i + max_len] for i in range(0, len(c_region), max_len)]
 
         width = str(len(str(len(c_region))))
@@ -133,8 +136,8 @@ class PWA(object):
 
         row = 0
         for s, t, v in list(zip(seq1, seq2, seqC)):
-            s_len = max_len - s.count('-')
-            t_len = max_len - t.count('-')
+            s_len = len(s) - s.count('-')
+            t_len = len(t) - t.count('-')
             print("query", format(s_len_total + 1, ' <' + width + 'd'), s, s_len + s_len_total)
             print("sbjct", format(t_len_total + 1, ' <' + width + 'd'), t, t_len + t_len_total)
             if show_conserved:
@@ -322,8 +325,8 @@ class PWA(object):
                 raise RuntimeError("traced path string contains invalid character. CHECK YOUR PWA ALGORITHM!!")
 
         if local:
-            top_prefix = seq1[:i+1]
-            bot_prefix = seq2[:j+1]
+            top_prefix = seq1[:i-1]
+            bot_prefix = seq2[:j-1]
 
             new_seq1 = top_prefix + new_seq1
             new_seq2 = bot_prefix + new_seq2
