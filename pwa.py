@@ -56,6 +56,14 @@ class SubstitutionMatrix(Enum):
         return self.__matrix_dict
 
 
+class UnsupportedCodeError(Exception):
+    def __init__(self, option='', value="Sequence must contain only Amino acids: -ARNDCQEGHILKMFPSTWYV and Nucleotides: ATUCG. "):
+        self.value = value + option
+
+    def __str__(self):
+        return repr(self.value)
+
+
 class PWA(object):
     """
     Pairwise Alignment of FASTA sequences using
@@ -115,12 +123,27 @@ class PWA(object):
             self.aligned_sequences.append(v)
             return v
 
+    def print_pretty(self, separator=' '):
+        print("rows: ", len(self.__matrix), "\ncolumns: ", len(self.__matrix[0]), "\n")
+        for row in self.__matrix:
+            if isinstance(row[0], str):
+                print(separator.join(str(c) for c in row))
+        print()
+
     def print_aligned_seq(self):
         if self.aligned_sequences:
             print(self.aligned_sequences[0], " ", self.__get_fasta_comment(self.fasta_list[0]))
             print(self.aligned_sequences[1], " ", self.__get_fasta_comment(self.fasta_list[1]))
 
-    def print_aligned_seq_formatted(self, max_len=80,show_conserved=True,show_mismatch_only=False):
+    def print_aligned_seq_formatted(self, max_len=60,show_conserved=True,show_mismatch_only=False):
+        formatted_list = self.get_aligned_seq_formatted(max_len, show_conserved, show_mismatch_only)
+        for row in formatted_list:
+            print(row)
+
+    def get_aligned_seq_formatted(self, max_len=60,show_conserved=True,show_mismatch_only=False):
+        if len(self.aligned_sequences[0]) < max_len:
+            max_len = len(self.aligned_sequences[0])
+
         seq1 = [self.aligned_sequences[0][i:i + max_len] for i in range(0, len(self.aligned_sequences[0]), max_len)]
         seq2 = [self.aligned_sequences[1][i:i + max_len] for i in range(0, len(self.aligned_sequences[1]), max_len)]
 
@@ -134,30 +157,28 @@ class PWA(object):
         s_len_total = 0
         t_len_total = 0
 
+        formatted_list = list()
+
         row = 0
         for s, t, v in list(zip(seq1, seq2, seqC)):
             s_len = len(s) - s.count('-')
             t_len = len(t) - t.count('-')
-            print("query", format(s_len_total + 1, ' <' + width + 'd'), s, s_len + s_len_total)
-            print("sbjct", format(t_len_total + 1, ' <' + width + 'd'), t, t_len + t_len_total)
+            formatted = "query" + format(s_len_total + 1, ' <' + width + 'd') + s + str(s_len) + str(s_len_total) + '\n'
+            formatted += "sbjct" + format(t_len_total + 1, ' <' + width + 'd') + t + str(t_len) + str(t_len_total) + '\n'
             if show_conserved:
-                print("     ", format('', ' <' + width + 's'), v)
-            print()
+                formatted += "     " + format('', ' <' + width + 's') + v + '\n'
+
             row += 1
             s_len_total += s_len
             t_len_total += t_len
 
+            formatted_list.append(formatted)
+
+        return formatted_list
 
     def get_final_score(self):
         end = self.__matrix[-1][-1]
         return end[0]
-
-    def print_pretty(self, separator=' '):
-        print("rows: ", len(self.__matrix), "\ncolumns: ", len(self.__matrix[0]), "\n")
-        for row in self.__matrix:
-            if isinstance(row[0], str):
-                print(separator.join(str(c) for c in row))
-        print()
 
     def __init_matrix(self, gap, seq1, seq2):
         if self.alignment_method.name is AlignmentMethod.LOCAL.name:
@@ -392,9 +413,39 @@ class PWA(object):
         return seq.lstrip(self.__get_fasta_comment(seq)).strip()
 
 
-class UnsupportedCodeError(Exception):
-    def __init__(self, option='', value="Sequence must contain only Amino acids: -ARNDCQEGHILKMFPSTWYV and Nucleotides: ATUCG. "):
-        self.value = value + option
+if __name__ == '__main__':
+    alignment_method = ""
+    alignment_type = ""
+    sequence = ""
+    while True:
+        if not alignment_type:
+            alignment_type = input("protein or nucleotides? p/n: ").lower()
+        if not alignment_type or not alignment_type == "p" and not alignment_type == "n":
+            print("incorrect type:", alignment_type)
+            alignment_type = ""
+            continue
+        if not alignment_method:
+            alignment_method = input("local or global? l/g: ").lower()
+        if not alignment_method or not alignment_method == 'l' and not alignment_method == 'g':
+            print("incorrect method:", alignment_method)
+            alignment_method = ""
+            continue
 
-    def __str__(self):
-        return repr(self.value)
+        alignment_t = AlignmentType.PROTEIN if alignment_type == 'p' else AlignmentType.NUCLEOTIDE
+        alignment_m = AlignmentMethod.LOCAL if alignment_method == 'l' else AlignmentMethod.GLOBAL
+
+        sequence = ""
+        inp = input("FASTA sequences with >comment:\n")
+        while inp:
+            sequence += inp + '\n'
+            inp = input()
+
+        if not sequence.strip():
+            print("please input correct sequences")
+            continue
+
+        print("Doing alignment on", alignment_t.name, "using method", alignment_m.name)
+
+        pwa = PWA(alignment_t, alignment_m, sequence.strip())
+        pwa.do_alignment()
+        pwa.print_aligned_seq_formatted()
