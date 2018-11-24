@@ -163,10 +163,10 @@ class PWA(object):
         for s, t, v in list(zip(seq1, seq2, seqC)):
             s_len = len(s) - s.count('-')
             t_len = len(t) - t.count('-')
-            formatted = "query" + format(s_len_total + 1, ' <' + width + 'd') + s + str(s_len) + str(s_len_total) + '\n'
-            formatted += "sbjct" + format(t_len_total + 1, ' <' + width + 'd') + t + str(t_len) + str(t_len_total) + '\n'
+            formatted = "query " + format(s_len_total + 1, ' <' + width + 'd') + " " + s + " " + str(s_len + s_len_total) + '\n'
+            formatted += "sbjct " + format(t_len_total + 1, ' <' + width + 'd') + " " + t + " " + str(t_len + t_len_total) + '\n'
             if show_conserved:
-                formatted += "     " + format('', ' <' + width + 's') + v + '\n'
+                formatted += "      " + format('', ' <' + width + 's') + " " + v + " " + '\n'
 
             row += 1
             s_len_total += s_len
@@ -449,3 +449,4 @@ if __name__ == '__main__':
         pwa = PWA(alignment_t, alignment_m, sequence.strip())
         pwa.do_alignment()
         pwa.print_aligned_seq_formatted()
+        break
