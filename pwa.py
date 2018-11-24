@@ -88,7 +88,6 @@ class PWA(object):
         self.aligned_sequences = None
         self.__matrix = [[" ", " "],
                        [" "]]
-
         self.best_location = None
         self.best_score = -inf
 
@@ -367,7 +366,7 @@ class PWA(object):
         prot_pat = compile("^[-ARNDCQEGHILKMFPSTWYV]+$")
 
         prot = False
-        if self.alignment_type.name is AlignmentType.PROTEIN.name:
+        if self.alignment_type.name == AlignmentType.PROTEIN.name:
             prot = True
 
         buffer = ""
