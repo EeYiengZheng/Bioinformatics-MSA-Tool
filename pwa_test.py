@@ -242,7 +242,7 @@ GLRSVGASRHQGPL
 
     for seq in dq:
         align_type = AlignmentType.PROTEIN if test_peptides else AlignmentType.NUCLEOTIDE
-        pwa_test = PWA(align_type, AlignmentMethod.LOCAL, seq)
+        pwa_test = PWA(align_type, AlignmentMethod.GLOBAL, seq)
         match = 5
         mismatch = -5
         gap = -10

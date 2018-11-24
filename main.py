@@ -58,7 +58,7 @@ class GUI(tk.Tk):
 
     def submission(self, event=None):
         self.button_align.config(state="disabled")
-        self.status.config(text="Working on alignment. It may take a while depending on inputs...\n")
+        self.status.config(text="Working on alignment. It may take a while depending on inputs...")
         self.status.update()
 
         alignment_type = None
@@ -77,17 +77,30 @@ class GUI(tk.Tk):
             prog = self.program(alignment_type, alignment_method, self.input.get('1.0', 'end-1c'))
             prog.do_alignment()
             output = prog.get_aligned_seq_formatted()
+        except pwa.UnsupportedCodeError:
+            self.status.config(
+                text="Your inputs contain unsupported codes. Be sure to select peptide/nucleotide, and input only correct FASTA text")
+        except ValueError:
+            self.status.config(text="Your input is not recognized. Be sure to do some minimal input-sanitation")
         except:
-            self.status.config(text="Error")
+            self.status.config(text="unrecognized error")
+        finally:
             self.status.update()
 
         if output:
             self.status.config(text="Done")
+
+            # clear output box
+            self.output.delete('1.0', 'end-1c')
+
+            # write in output
             for line in reversed(output):
                 self.output.insert('1.0', '\n')
                 self.output.insert('1.0', line)
-        else:
-            self.status.config(text="Inputs not recognized")
+
+            # fasta comments
+            self.output.insert('1.0', "sbjct=" + prog.get_fasta_comment(prog.fasta_list[1]))
+            self.output.insert('1.0', "query=" + prog.get_fasta_comment(prog.fasta_list[0]) + "\n")
 
         self.button_align.config(state="normal")
 
