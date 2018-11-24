@@ -4,6 +4,7 @@ import tkinter.scrolledtext as tk_scrolled_text
 from tkinter import N, S, E, W
 import pwa
 import tkinter.ttk as ttk
+from tkinter.filedialog import askopenfilename
 
 class GUI(tk.Tk):
     def __init__(self, prog=None):
@@ -18,7 +19,7 @@ class GUI(tk.Tk):
         # input boxes
         self.input = tk_scrolled_text.ScrolledText(self, width=100, height=10, undo=True, wrap='word')
         self.input.grid(row=1, column=1, columnspan=10, padx=(5,5), pady=(5,0), sticky=E)
-
+        self.input.insert(tk.END, "paste in or browse for file")
         # execution output box
         self.output = tk_scrolled_text.ScrolledText(self, width=100, height=20, undo=True, font=label_font, wrap='word')
         self.output.grid(row=2, column=1, columnspan=10, padx=(5,5), pady=(5,5), sticky=E)
@@ -36,6 +37,10 @@ class GUI(tk.Tk):
         method_options_g = ttk.Radiobutton(self, text='Global Alignment', variable=self.met, value=pwa.AlignmentMethod.GLOBAL.name)
         method_options_g.grid(row=4, column=5, sticky=W)
 
+        # browse file button
+        self.filename = None
+        self.button_file = ttk.Button(self, text="Browse", command=self.browse)
+        self.button_file.grid(row=5, column=2)
         # execution button
         self.button_align = ttk.Button(self, text="Align")
         self.button_align.grid(row=5, column=3, columnspan=5, padx=(5,5), pady=(5,5), sticky="ew")
@@ -56,6 +61,17 @@ class GUI(tk.Tk):
         self.button_align.bind("<Button-1>", self.submission)
         self.bind("<Return>", self.submission)
 
+    def browse(self):
+        self.button_file = askopenfilename(initialdir='/', title="Select FASTA",
+                        filetypes=(("text file", "*.txt *.fasta"), ("all files", "*.*")))
+        if self.button_file:
+            input_text = None
+            with open(self.button_file, 'r') as f:
+                input_text = f.read()
+            if input_text:
+                self.input.delete('1.0', 'end-1c')
+                self.input.insert(tk.END, input_text)
+
     def submission(self, event=None):
         self.button_align.config(state="disabled")
         self.status.config(text="Working on alignment. It may take a while depending on inputs...")
@@ -73,6 +89,7 @@ class GUI(tk.Tk):
             alignment_method = pwa.AlignmentMethod.GLOBAL
 
         output = None
+
         try:
             prog = self.program(alignment_type, alignment_method, self.input.get('1.0', 'end-1c'))
             prog.do_alignment()
@@ -99,7 +116,8 @@ class GUI(tk.Tk):
                 self.output.insert('1.0', line)
 
             # fasta comments
-            self.output.insert('1.0', "sbjct=" + prog.get_fasta_comment(prog.fasta_list[1]))
+            self.output.insert('1.0', "\n")
+            self.output.insert('1.0', "sbjct=" + prog.get_fasta_comment(prog.fasta_list[1]) + "\n")
             self.output.insert('1.0', "query=" + prog.get_fasta_comment(prog.fasta_list[0]) + "\n")
 
         self.button_align.config(state="normal")
